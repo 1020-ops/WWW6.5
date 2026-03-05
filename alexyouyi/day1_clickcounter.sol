@@ -6,6 +6,5 @@ contract ClickCounter {
 
     function click() public {
         counter++;
-        
     }
 }
