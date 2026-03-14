@@ -29,13 +29,13 @@ contract SimplifiedTokenSale is SimpleERC20 {
     //constructor(...) SimpleERC20(_initialSupply)
     //这个合约继承自 SimpleERC20，所以需要把_initialSupply（初始代币数量）传递给母合约，这样才能真的铸造代币
     constructor( 
-        uint256 _intitialSupply,
+        uint256 _initialSupply,
         uint256 _tokenPrice,
         uint256 _saleDurationInSeconds,
         uint256 _minPurchase,
         uint256 _maxPurchase,
         address _projectOwner
-    )   SimpleERC20(_intitialSupply){
+    )   SimpleERC20(_initialSupply){
         tokenPrice = _tokenPrice;
         saleStartTime = block.timestamp;
         saleEndTime = block.timestamp + _saleDurationInSeconds;
