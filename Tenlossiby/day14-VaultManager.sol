@@ -98,35 +98,10 @@ contract VaultManager {
     //   - 原代码没有判断boxes[i] == boxAddress就直接删除
     //   - 导致永远删除数组最后一个元素，而不是目标元素
     // 
-    // 【新方案】采用"用户直接操作+事件通知"模式：
-    // 步骤1：用户直接调用存款盒合约的transferOwnership(newOwner)转移所有权
-    // 步骤2：用户调用VaultManager的notifyOwnershipTransferred通知管理器更新记录
+    // 【新方案】采用"用户直接操作+新所有者通知"模式：
+    // 步骤1：原所有者直接调用存款盒合约的transferOwnership(newOwner)转移所有权
+    // 步骤2：新所有者调用VaultManager的completeOwnershipTransfer通知管理器更新记录
     // 优点：符合权限设计，VaultManager只管理记录不操作资产
-
-    // 【新增函数】通知VaultManager所有权已转移（采用两步骤模式）
-    // 使用流程：
-    //   1. 用户先调用存款盒合约的transferOwnership(newOwner)完成实际转移
-    //   2. 用户再调用此函数通知VaultManager更新内部记录
-    // 参数boxAddress：存款盒地址
-    // 参数newOwner：新所有者地址
-    function notifyOwnershipTransferred(address boxAddress, address newOwner) external {
-        IDepositBox box = IDepositBox(boxAddress);
-        // 转换为接口类型
-        
-        // 验证：调用者必须是新所有者（证明转移已完成）
-        require(box.getOwner() == msg.sender, "Caller is not the new owner");
-        // 验证：新所有者确实是参数指定的地址
-        require(msg.sender == newOwner, "New owner mismatch");
-        
-        // 从原所有者的列表中移除该存款盒
-        // 注意：我们需要找到原所有者，但存款盒合约不记录历史所有者
-        // 解决方案：遍历所有可能的原所有者（实际应用中可通过事件查询优化）
-        // 简化方案：要求原所有者在转移前调用此函数，或前端协助提供原所有者地址
-        
-        // 【优化设计】为简化实现，我们假设调用者知道原所有者地址
-        // 实际应用中，可以通过事件日志查询原所有者
-        // 这里采用简化方案：由调用者提供原所有者地址
-    }
 
     // 【新增函数】完成所有权转移的完整流程（需要原所有者配合）
     // 参数boxAddress：存款盒地址
@@ -192,9 +167,10 @@ contract VaultManager {
     // 【使用指南】
     // 1. 创建存款盒：调用createBasicBox/createPremiumBox/createTimeLockedBox
     // 2. 存储秘密：直接调用存款盒合约的storeSecret函数（不是通过VaultManager）
-    // 3. 转移所有权：
-    //    步骤1：调用存款盒合约的transferOwnership(newOwner)
-    //    步骤2：新所有者调用VaultManager的completeOwnershipTransfer(boxAddress, previousOwner)
+    // 3. 转移所有权（两步骤）：
+    //    步骤1：原所有者调用存款盒合约的transferOwnership(newOwner)完成实际转移
+    //    步骤2：新所有者调用VaultManager的completeOwnershipTransfer(boxAddress, previousOwner)更新记录
+    //    注意：步骤2必须由新所有者调用，因为合约会验证msg.sender == 当前所有者
     // 4. 查询信息：通过VaultManager的getUserBoxes/getBoxInfo等函数查询
     //
     // 【设计原则】
