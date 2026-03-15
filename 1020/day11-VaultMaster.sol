@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import "./Ownable.sol";
+import "./day11-Ownable.sol";
 //如果不自己写，可以导入别人写的：import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract Vaultmaster is Ownable{// VaultMaster 现在自动拥有 Ownable 的所有函数、变量和修饰符。
